@@ -37,7 +37,7 @@
 class DHT_nonblocking
 {
   public:
-    DHT_nonblocking( uint8_t pin, uint8_t type );
+    DHT_nonblocking( uint8_t pin, uint8_t type, unsigned long timeout_ms = 0 );
     bool measure( float *temperature, float *humidity );
 
   private:
@@ -50,6 +50,7 @@ class DHT_nonblocking
     unsigned long dht_timestamp;
     uint8_t data[ 6 ];
     const uint8_t _pin, _type, _bit, _port;
+    const unsigned long _read_timeout;
     const uint32_t _maxcycles;
 
     uint32_t expect_pulse( bool level ) const;

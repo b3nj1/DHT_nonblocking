@@ -37,11 +37,12 @@
  * Constructor for the sensor.  It remembers the pin number and the
  * type of sensor, and initializes internal variables.
  */
-DHT_nonblocking::DHT_nonblocking( uint8_t pin, uint8_t type )
+DHT_nonblocking::DHT_nonblocking( uint8_t pin, uint8_t type, unsigned long timeout_ms = 0 )
 	: _pin( pin ),
 	  _type( type ),
 	  _bit( digitalPinToBitMask( pin ) ),
 	  _port( digitalPinToPort( pin ) ),
+	  _read_timeout( timeout_ms ),
 	  _maxcycles( microsecondsToClockCycles( 1000 ) )
 {
   dht_state = DHT_IDLE;
@@ -239,6 +240,7 @@ bool DHT_nonblocking::read_nonblocking( )
 bool DHT_nonblocking::read_data( )
 {
   uint32_t cycles[ 80 ];
+  unsigned long timeout_at = millis() + _read_timeout;
 
   /* Turn off interrupts temporarily because the next sections are timing critical
      and we don't want any interruptions. */
@@ -275,8 +277,18 @@ bool DHT_nonblocking::read_data( )
     // the pulses are read into a array and then examined in a later step.
     for( int i = 0; i < 80; i += 2 )
     {
-      cycles[ i     ] = expect_pulse( LOW );
-      cycles[ i + 1 ] = expect_pulse( HIGH );
+      uint32_t count = expect_pulse( LOW );
+      if (count == 0 || _read_timeout && millis() >= timeout_at)
+      {
+        return( false );
+      }
+      cycles[ i     ] = count;
+      count = expect_pulse( HIGH );
+      if (count == 0 || _read_timeout && millis() >= timeout_at)
+      {
+        return( false );
+      }
+      cycles[ i + 1 ] = count;
     }
 
     /* Timing critical code is now complete. */
