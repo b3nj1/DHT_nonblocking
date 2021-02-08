@@ -37,7 +37,7 @@
  * Constructor for the sensor.  It remembers the pin number and the
  * type of sensor, and initializes internal variables.
  */
-DHT_nonblocking::DHT_nonblocking( uint8_t pin, uint8_t type, unsigned long timeout_ms = 0 )
+DHT_nonblocking::DHT_nonblocking( uint8_t pin, uint8_t type, unsigned long timeout_ms )
 	: _pin( pin ),
 	  _type( type ),
 	  _bit( digitalPinToBitMask( pin ) ),
